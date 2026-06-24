@@ -10,3 +10,9 @@ clients:
     onboarded_at: 2026-06-24
     primary_query: "망원카페 추천"
     notes: "첫 실전 클라이언트 (dry-run 단계). 망리단길 디저트 카페."
+  - slug: thebom-tax
+    status: active
+    priority: high
+    onboarded_at: 2026-06-24
+    primary_query: "홍대 세무사 추천"
+    notes: "첫 B2B 실전 클라이언트 (지인). 더봄세무법인 홍대점, 대표 홍지영. 타깃: 홍대 자영업 + 숙박업(에어비앤비/펜션)"

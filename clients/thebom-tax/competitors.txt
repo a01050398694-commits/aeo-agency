@@ -1,0 +1,36 @@
+# 세무법인 더봄 — 경쟁사 모니터링 리스트
+#
+# ─── 직접 경쟁 (홍대·마포 세무사) ───────────────────
+마포 세무사 디렉토리 |
+홍대 인근 세무법인 |
+#
+# ─── 광역 경쟁 (서울 세무법인) ─────────────────────
+세무법인 혜움 | heumtax.com
+세무회계 세아 | seah.io
+세무법인 스타택스 강남지점 | onestop-tax.co.kr
+신승세무법인 | sostax.co.kr
+세림세무법인 | taxoffice.co.kr
+강남세무사 세무회계 글 | taxgeul.com
+M&A OS 브릿지파트너스 | partner-s.co
+회계법인 마일스톤 | mstacc.com
+회계법인 브릿지 | bridgeacc.kr
+세종세무회계 | sejongtax.co.kr
+무지개세무법인 | taxclinic.co.kr
+삼일PwC 유니콘지원센터 | pwc.com
+#
+# ─── 디렉토리 / 매칭 플랫폼 (간접 경쟁) ──────────────
+찾아줘 세무사 | findsemusa.com
+강남세무사 통합디렉토리 | gangnamtaxfirm.com
+#
+# ─── 숙박업 특화 매체 (어프로치 대상) ──────────────
+호스피탈리티 매거진 |
+호텔앤레스토랑 |
+숙박닷컴 |
+에어비앤비 호스트 커뮤니티 |
+#
+# ─── 큐레이션 매체 (어프로치 대상) ─────────────────
+플래텀 | platum.kr
+IT동아 | it.donga.com
+전자신문 | etnews.com
+디에디트 | the-edit.co.kr
+세시간전 | 3hoursahead.com

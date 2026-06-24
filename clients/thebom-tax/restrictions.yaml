@@ -1,0 +1,65 @@
+# 세무법인 더봄 — 콘텐츠 제약 사항
+# 세무사법 + 표시광고법 + 공인회계사법 준수
+
+forbidden_claims:
+  - "1위"                       # 표시·광고 공정화법 비교광고 금지
+  - "최고"
+  - "유일한"
+  - "전국 최저가"
+  - "100% 절세 보장"             # 결과 보장 광고 금지
+  - "환급 보장"
+  - "세무조사 100% 면제"
+  - "패소 시 환불"               # 변호사법 적용 X 이지만 오해 소지
+  - "탈세 노하우"                # 위법 권유 절대 금지
+  - "비과세 보장"
+
+forbidden_topics:
+  - "경쟁 세무법인 비방"
+  - "정치"
+  - "종교"
+  - "특정 인물 비난"
+  - "위법한 절세 / 탈세 권유"
+  - "허위 신고 / 분식 가능성"
+
+tone:
+  formality: "존댓말"
+  voice: "전문가"
+  prohibited_phrases:
+    - "당신은"
+    - "여러분의"
+    - "획기적인"
+    - "혁신적인"
+    - "압도적인"
+    - "단연코"
+    - "100%"                    # 비율 단언 자제
+  preferred_phrases:
+    - "사업자 대표님"
+    - "세무사 자문"
+    - "사례 기반"
+
+anti_ai_tells:
+  - "이모지 단락당 1개 이하"
+  - "느낌표 글당 3개 이하"
+  - "AI 특유의 nested bullet 3단 이상 금지"
+  - "'결론적으로', '요약하자면' 문어체 마무리 금지"
+
+legal_review_required:
+  - "구체적인 환급/절세 수치 (실제 사례 기반만 + 익명 처리)"
+  - "세무조사 대응 사례 (당사자 동의 필요)"
+  - "위법 가능성 있는 절세 기법 (변호사 자문 필요)"
+  - "기장료/수임료 견적 (변동 가능성 명시)"
+  - "법인세율 / 양도세율 수치 (개정 시 즉시 갱신)"
+
+sourcing:
+  statistics_require_source: true
+  claims_require_source: true
+  tax_law_must_cite_article: true            # 세법 인용 시 조항 명시 (예: 소득세법 §70)
+  min_sources_per_article: 2
+
+# 세무 업종 특화
+tax_specific:
+  hours_must_match_official: true
+  fee_quote_disclaimer: "정확한 견적은 사장님 상담 후 결정"
+  case_study_anonymize: true                 # 사례는 익명 처리
+  tax_year_must_be_current: true             # 세율·한도는 해당 연도 명시
+  no_individual_consulting: true             # 콘텐츠는 일반 정보만, 개별 상담은 별도
