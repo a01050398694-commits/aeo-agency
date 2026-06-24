@@ -1,0 +1,46 @@
+name: Daily Threshold Checks
+
+# 매일 04:00 KST = 19:00 UTC (전일)
+on:
+  schedule:
+    - cron: "0 19 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Write .env from secrets
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_OPS_CHAT_ID: ${{ secrets.TELEGRAM_OPS_CHAT_ID }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          OPS_EMAIL: ${{ secrets.OPS_EMAIL }}
+        run: |
+          {
+            echo "GEMINI_API_KEY=$GEMINI_API_KEY"
+            echo "SUPABASE_URL=$SUPABASE_URL"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY"
+            echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+            echo "TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN"
+            echo "TELEGRAM_OPS_CHAT_ID=$TELEGRAM_OPS_CHAT_ID"
+            echo "RESEND_API_KEY=$RESEND_API_KEY"
+            echo "FROM_EMAIL=onboarding@resend.dev"
+            echo "OPS_EMAIL=$OPS_EMAIL"
+          } > .env
+
+      - name: Run threshold checks
+        run: python scripts/notify/check_thresholds.py
