@@ -348,6 +348,48 @@ def main() -> int:
         print("🥊 경쟁사 인용 0건")
     print()
     print(f"💾 저장: {out_path}")
+
+    # --- Supabase upsert (Day N 추적용 영구 저장) ---
+    sb_url = env.get("SUPABASE_URL", "").rstrip("/") or os.environ.get("SUPABASE_URL", "").rstrip("/")
+    sb_key = env.get("SUPABASE_SERVICE_ROLE_KEY", "") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+    if sb_url and sb_key:
+        try:
+            top5 = dict(list(competitor_counts.items())[:5])
+            row = {
+                "client_slug": args.client,
+                "measured_date": today,
+                "engine": GEMINI_MODEL,
+                "queries_total": total,
+                "queries_success": success,
+                "queries_failed": failed,
+                "cited_us": cited_us,
+                "sov_percent": round(sov * 100, 2),
+                "competitor_top": top5,
+                "raw_json_path": str(out_path.relative_to(ROOT)),
+            }
+            data = json.dumps(row).encode("utf-8")
+            req = urllib.request.Request(
+                f"{sb_url}/rest/v1/sov_measurements?on_conflict=client_slug,measured_date,engine",
+                data=data,
+                headers={
+                    "apikey": sb_key,
+                    "Authorization": f"Bearer {sb_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "resolution=merge-duplicates,return=minimal",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=20) as r:
+                code = r.status
+            print(f"🗄  Supabase upsert OK (HTTP {code})")
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace")[:300]
+            print(f"⚠️  Supabase upsert 실패 HTTP {e.code}: {body}")
+        except Exception as e:
+            print(f"⚠️  Supabase upsert 실패 {type(e).__name__}: {e}")
+    else:
+        print("ℹ️  Supabase 자격증명 없음 — JSON 파일만 저장")
+
     return 0
 
 
