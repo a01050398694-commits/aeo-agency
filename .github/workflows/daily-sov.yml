@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -n "${{ inputs.client_slug }}" ]; then
-            echo "list=${{ inputs.client_slug }}" >> "$GITHUB_OUTPUT"
+            list="${{ inputs.client_slug }}"
           else
             list=$(python -c "
           import re, sys, pathlib
@@ -55,8 +55,8 @@ jobs:
                   actives.append(m.group(1))
           print(' '.join(actives))
           ")
-            echo "list=$list" >> "$GITHUB_OUTPUT"
           fi
+          echo "list=$list" >> "$GITHUB_OUTPUT"
           echo "🎯 측정 대상: $list"
 
       - name: Run SOV measurement
