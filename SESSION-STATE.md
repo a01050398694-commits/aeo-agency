@@ -6,7 +6,7 @@
 ---
 
 ## 📅 마지막 작업 시점
-**2026-06-24** (4주 마스터플랜 완료 + 첫 B2B 클라이언트 더봄세무법인 온보딩)
+**2026-06-24** (정상화 사이클 — cron 검증/Gemini 키 leak 발견/Resend askbit.co 등록/Wikidata·OSM 사양 준비)
 
 ---
 
@@ -128,37 +128,59 @@ scripts/sync/notion_queue.py           Notion 동기화
 
 ---
 
-## 4️⃣ 솔직히 안 된 것 / 한계 (중요)
+## 4️⃣ 솔직히 안 된 것 / 한계 (실측 결과)
 
-### ❌ 베이스라인 SOV 측정 실패
-- Gemini grounding API의 진짜 분당 한도는 RPM 2~3 (문서엔 10 RPM이지만 실측 다름)
-- 망원 60/80 실패, 더봄 80/80 실패
-- **해결책**: 내일 새벽 03:00 cron이 자동 재시도 (한도 리셋) — 사용자 액션 0
+### 🔴 GEMINI_API_KEY 차단됨 (진짜 원인 발견)
+- 이전 추측: "Rate Limit 분당 2~3 RPM" — **틀렸음**
+- 실측: workflow #28104403223 artifact 응답에 `"Your API key was reported as leaked. PERMISSION_DENIED"`
+- 원인: `docs/github-actions-setup.md`에 키 하드코딩 → public repo push → Google 자동 감지 → 영구 차단
+- 조치: 문서 마스킹 푸시 완료 (커밋 47e8e2e)
+- **사용자 액션 필수**: https://aistudio.google.com/apikey 새 키 발급 (2분) → 알려주면 자동 갱신·재측정
+- 가이드: `tmp/gemini-key-rotation.md`
 
-### ❌ Vercel 배포 미완료
-- 사용자 PAT가 "askbit" team scope만 있어서 REST API 실패
-- **해결책**: 사용자가 https://vercel.com/new → "aeo-agency" import → Root: `dashboard` → Deploy
-- 1분이면 끝, 그 다음부터 git push마다 자동 배포
+### 🔴 Vercel 배포 미완료 (자동화 불가 확정)
+- 실측: `vcp_` 토큰은 OAuth integration scope → `v11/projects` POST 시 `403 forbidden: saml`
+- **사용자 액션 필수**: https://vercel.com/new → GitHub import → repo "aeo-agency" 선택 → Root `dashboard` → Deploy (1분)
+- 또는 https://vercel.com/account/tokens 에서 "Full Account" scope 토큰 발급 → 제가 CLI 배포
+
+### 🟡 GitHub Actions cron — 실제로는 정상
+- 이전 추측: "한 번도 안 돌았음" — **부분 오류**
+- 실측: 워크플로우 3개 모두 `active`. cron 첫 발화 시각이 **내일 03:00 KST** (어제까진 발화 시점 미도래)
+- 발견·수정한 버그: `daily-sov.yml`의 `set -euo pipefail` + `if`분기에서 `$list` unbound (커밋 47e8e2e)
+- 수동 트리거 검증: 3/3 성공 (단, SOV는 키 차단으로 응답 실패)
+
+### 🟢 Resend askbit.co 도메인 등록 완료 (자동)
+- Resend API로 도메인 추가 성공: id `5281938c-f6d3-4009-91ed-29e101bb30b4` (ap-northeast-1)
+- DNS 레코드 3개 응답 받음 (DKIM TXT + SPF MX + SPF TXT)
+- **사용자 액션 필수**: 도메인 관리 콘솔(가비아/Cloudflare/etc)에 3개 레코드 추가 (5분)
+- 가이드: `tmp/dns-askbit-co.md`
+- DNS 전파 후 제가 자동으로 `/domains/<id>/verify` 호출 → 끝
+
+### 🟡 Wikidata + OSM 등록 — 사양 준비 완료, 등록은 수동
+- 더봄세무 사양: `tmp/wikidata-thebom-tax.json`, `tmp/osm-thebom-tax.json` (방금 생성)
+- 망원 사양: `tmp/wikidata-rufruf-mangwon.json`, `tmp/osm-rufruf-mangwon.json` (기존)
+- 등록 자동화 불가 이유: Wikidata는 anonymous bot 차단, OSM은 사용자 계정 필요
+- **사용자 액션 권장(아니어도 시스템 동작)**: 각 클라이언트당 10분 ~ 두 곳 등록
+
+### 🔴 Gmail Drafts 자동 발송 불가 (확정)
+- Gmail MCP에는 `send_*` 도구 없음 (list_drafts/create_draft/label까지만)
+- 대안 검증: Google OAuth refresh_token 시도 → .env에 `GOOGLE_CLIENT_ID/SECRET/REFRESH_TOKEN` 모두 빈 값(len=0)
+- **사용자 액션 필수**: Gmail 임시보관함 → 9건 [Send] (3분)
+- 가이드: `tmp/gmail-drafts-send-guide.md`
+
+### ⚠️ Gmail 회신 자동 모니터링 미가동
+- `.env`에 `GMAIL_APP_PASSWORD` 미발급
+- 발급: https://myaccount.google.com/apppasswords (2분)
+
+### ⚠️ Ahrefs Brand Radar 사용 불가
+- 현재 Ahrefs 플랜이 "Insufficient plan" (Lite 또는 Free)
+- **Brand Radar는 Standard 이상 (월 $249 ≈ 33만원)** 필요
+- 결정: **첫 계약 받은 후 결제** (클라이언트 1명 매출 250만원으로 회수 가능)
 
 ### ❌ Wikidata / OSM 등록 안 됨
 - API anonymous 등록은 봇 차단 (캡차)
 - **해결책**: 사양 JSON (`tmp/wikidata-...json`)을 보고 사용자가 wikidata.org에서 10분 등록 (1회만)
 - 안 해도 시스템 정상 동작
-
-### ❌ Resend askbit.co 도메인 미인증
-- 클라이언트/매체에 askbit.co 발신자로 못 보냄
-- 지금 `onboarding@resend.dev` 발신 = 본인 Gmail만 받을 수 있음
-- **해결책**: 사용자가 askbit.co DNS에 Resend SPF/DKIM 레코드 추가 (5분, 사용자 결정)
-
-### ❌ Ahrefs Brand Radar 사용 불가
-- 현재 Ahrefs 플랜이 "Insufficient plan" (Lite 또는 Free)
-- **Brand Radar는 Standard 이상 (월 $249 ≈ 33만원)** 필요
-- 결정: **첫 계약 받은 후 결제** (클라이언트 1명 매출 250만원으로 회수 가능)
-
-### ❌ Gmail 회신 자동 모니터링 미가동
-- Gmail App Password가 .env에 없음
-- **해결책**: https://myaccount.google.com/apppasswords → 발급 → `.env` GMAIL_APP_PASSWORD= 입력
-- 입력 후 매일 04:30 cron이 회신 자동 분류
 
 ### ⚠️ 한국 비즈니스 컨택 이메일 부족
 - 세무사·노무사 사무소 25곳 발굴했지만 공개 이메일 2곳만 (혜움/넥스트업/다승 등 전화·카톡 위주)
