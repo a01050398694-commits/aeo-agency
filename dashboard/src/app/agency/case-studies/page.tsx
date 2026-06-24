@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { AGENCY } from "@/lib/agency/data"
+import { CASE_STUDIES } from "@/lib/case-studies/data"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
@@ -12,47 +12,42 @@ export default function CaseStudiesPage() {
         <p className="text-xs uppercase tracking-wider text-muted-foreground">Case Studies</p>
         <h1 className="text-4xl font-semibold">실제 사례</h1>
         <p className="text-muted-foreground max-w-2xl">
-          진행 중인 클라이언트 — Before/After SOV 데이터 누적 중.
+          진행 중인 클라이언트 + 자사 시스템 구축 사례 — 모든 데이터 실측·자동 측정.
         </p>
       </header>
 
-      <section className="space-y-6">
-        {AGENCY.cases.map((c) => (
-          <Card key={c.slug}>
-            <CardHeader>
-              <Badge variant="outline">진행 중 (Day 1~30)</Badge>
-              <CardTitle className="text-2xl mt-2">{c.title}</CardTitle>
-              <CardDescription>{c.summary}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ul className="space-y-2 text-sm text-foreground/80">
-                {c.bullets.map((b) => (
-                  <li key={b} className="flex items-start gap-2">
-                    <span className="text-foreground/40">●</span>
-                    {b}
-                  </li>
+      <section className="space-y-4">
+        {CASE_STUDIES.map((c) => (
+          <Link key={c.slug} href={`/agency/case-studies/${c.slug}`}>
+            <Card className="hover:border-foreground/40 transition-colors cursor-pointer">
+              <CardHeader>
+                <div className="flex gap-2 flex-wrap">
+                  <Badge variant="outline">{c.industry}</Badge>
+                  <Badge variant={c.status === "completed" ? "success" : "warning"}>
+                    {c.status === "completed" ? "완료" : "진행 중"}
+                  </Badge>
+                  <Badge variant="secondary">{c.duration}</Badge>
+                </div>
+                <CardTitle className="text-2xl mt-2">{c.title}</CardTitle>
+                <CardDescription>{c.hero}</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3 sm:grid-cols-3 pt-2 border-t mt-2">
+                {c.results.slice(0, 3).map((r) => (
+                  <div key={r.metric}>
+                    <p className="text-xs text-muted-foreground">{r.metric}</p>
+                    <p className="text-xl font-mono font-semibold">{r.value}</p>
+                  </div>
                 ))}
-              </ul>
-              <div className="flex gap-3 pt-2">
-                <Link
-                  href={c.url}
-                  className="text-sm underline hover:opacity-70"
-                >
-                  클라이언트 사이트 보기 ↗
-                </Link>
-                <Link
-                  href={`/${c.slug}`}
-                  className="text-sm underline hover:opacity-70"
-                >
-                  SOV 측정 포털 ↗
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+              <CardContent className="text-sm text-foreground/60 hover:text-foreground">
+                전체 사례 보기 →
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4 pt-8 border-t">
         <h2 className="text-xl font-semibold">참고 — 글로벌 AEO 사례</h2>
         <ul className="space-y-3 text-sm text-foreground/80">
           <li className="border-l-2 pl-3">
