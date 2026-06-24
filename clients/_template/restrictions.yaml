@@ -1,0 +1,48 @@
+# 콘텐츠 제약 사항
+
+# 금지 주장 (절대 사용 금지)
+forbidden_claims:
+  - "1위"                    # 비교광고 규제
+  - "최고"
+  - "유일한"
+  - "100% 안전"
+  - "부작용 없음"             # 의료
+  - "수익 보장"               # 금융
+  - "원금 보장"
+
+# 금지 토픽 (다루지 않음)
+forbidden_topics:
+  - "경쟁사 비방"
+  - "정치"
+  - "종교"
+  - "특정 인물 비난"
+
+# 톤가이드
+tone:
+  formality: "존댓말"         # 존댓말 | 반말 | 혼용
+  voice: "전문가"             # 전문가 | 친근한 | 격식
+  prohibited_phrases:        # 사용 금지 표현
+    - "당신은"
+    - "여러분의"
+    - "획기적인"
+    - "혁신적인"
+  preferred_phrases: []      # 권장 표현
+
+# AI 티 제거
+anti_ai_tells:
+  - "이모지 과사용 금지 (단락당 1개 이하)"
+  - "느낌표 과사용 금지"
+  - "Bold 과사용 금지"
+
+# 법적 검토 필요 주제 (자동 게재 금지, 인간 승인 필수)
+legal_review_required:
+  - "효능 주장"
+  - "의료 권고"
+  - "투자 권고"
+  - "법률 자문"
+
+# 출처 요구 수준
+sourcing:
+  statistics_require_source: true     # 모든 통계 출처 필수
+  claims_require_source: true         # 사실 주장 출처 필수
+  min_sources_per_article: 3

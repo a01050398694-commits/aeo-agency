@@ -1,0 +1,108 @@
+name: Daily SOV Measurement
+
+# 매일 03:00 KST = 18:00 UTC (전일)
+# clients/active.yaml의 모든 active 클라이언트를 순회
+on:
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+    inputs:
+      client_slug:
+        description: "단일 클라이언트 측정 (비우면 전체)"
+        required: false
+        type: string
+      limit:
+        description: "쿼리 수 제한 (테스트용, 0=전체)"
+        required: false
+        default: "0"
+        type: string
+
+permissions:
+  contents: write   # logs 커밋용
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Resolve client list
+        id: clients
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.client_slug }}" ]; then
+            echo "list=${{ inputs.client_slug }}" >> "$GITHUB_OUTPUT"
+          else
+            list=$(python -c "
+          import re, sys, pathlib
+          p = pathlib.Path('clients/active.yaml').read_text(encoding='utf-8')
+          slugs = re.findall(r'^\s*-\s*slug:\s*([a-z0-9-]+)\s*$', p, re.M)
+          status_blocks = re.split(r'(?=^\s*-\s*slug:)', p, flags=re.M)
+          actives = []
+          for block in status_blocks:
+              m = re.search(r'slug:\s*([a-z0-9-]+)', block)
+              if not m: continue
+              if re.search(r'status:\s*active', block):
+                  actives.append(m.group(1))
+          print(' '.join(actives))
+          ")
+            echo "list=$list" >> "$GITHUB_OUTPUT"
+          fi
+          echo "🎯 측정 대상: $list"
+
+      - name: Run SOV measurement
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TZ: Asia/Seoul
+        run: |
+          set -euo pipefail
+          # .env 파일 자동 생성 (스크립트가 우선 .env에서 읽음)
+          {
+            echo "GEMINI_API_KEY=$GEMINI_API_KEY"
+            echo "SUPABASE_URL=$SUPABASE_URL"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY"
+          } > .env
+
+          LIMIT_ARG=""
+          if [ "${{ inputs.limit }}" != "0" ] && [ -n "${{ inputs.limit }}" ]; then
+            LIMIT_ARG="--limit ${{ inputs.limit }}"
+          fi
+
+          for slug in ${{ steps.clients.outputs.list }}; do
+            echo "::group::📊 $slug"
+            python scripts/daily/gemini_sov.py --client "$slug" --rpm 10 $LIMIT_ARG
+            echo "::endgroup::"
+          done
+
+      - name: Commit logs
+        run: |
+          set -euo pipefail
+          git config user.name "aeo-bot"
+          git config user.email "aeo-bot@users.noreply.github.com"
+          git add 'clients/*/logs/sov-*.json' || true
+          if git diff --cached --quiet; then
+            echo "변경 없음 — 커밋 생략"
+            exit 0
+          fi
+          DATE=$(date +%Y-%m-%d)
+          git commit -m "chore(sov): daily measurement $DATE"
+          git push
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sov-logs-${{ github.run_id }}
+          path: clients/*/logs/sov-*.json
+          retention-days: 30

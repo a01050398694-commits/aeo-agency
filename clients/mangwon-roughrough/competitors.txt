@@ -1,0 +1,29 @@
+# 망원 러프러프 — 경쟁사 모니터링 리스트
+# 한 줄당 1개: <카페명> | <네이버 플레이스 URL 또는 도메인>
+# Gemini 답변에 인용 시 SOV 카운트 분모로 사용
+#
+# ─── 직접 경쟁 (망원동 디저트/베이커리 카페) ──────
+선데이카리오카 | https://www.diningcode.com/profile.php?rid=u1aAvXI6UXT9
+Uig 우이그 | https://www.diningcode.com/profile.php?rid=Q4fpiytHBSNK
+티노마드 | https://www.instagram.com/p/DKCOhhXz6PP/
+소설원 망원 | https://www.instagram.com/soseolwon_mangwon/
+망원도 | https://www.diningcode.com/profile.php?rid=dodXEoYNJOng
+#
+# ─── 망원동 인지도 높은 카페 (블로그/큐레이션 자주 등장) ──
+카페엠 망원 | https://www.welfarehello.com/community/hometownNews/6b485c6b-f962-436f-9a2d-55bb81f0a9b9
+QnA room |
+9ram |
+세시간전 큐레이션 망원 카페5 | https://3hoursahead.com/contents/1356
+디에디트 망원 카페 4 | https://the-edit.co.kr/35253
+#
+# ─── 광역 경쟁 (마포/홍대/합정 디저트 카페) ─────────
+성수 러프러프 (본점/같은 브랜드) | https://www.diningcode.com/profile.php?rid=a3p5II0KMDSf
+#
+# ─── 큐레이터 매체 (인용 시 우리도 노출되어야 할 곳) ─
+다이닝코드 | diningcode.com
+디에디트 | the-edit.co.kr
+오늘의집 | ohou.se
+세시간전 | 3hoursahead.com
+트립닷컴 | kr.trip.com
+망고플레이트 | mangoplate.com
+캐치테이블 | catchtable.co.kr

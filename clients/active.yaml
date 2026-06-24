@@ -1,0 +1,12 @@
+# 활성 클라이언트 레지스트리
+# 일일 cron이 이 목록을 순회
+# 새 클라이언트 추가: 슬러그 추가
+# 일시 중지: status를 paused로 변경
+
+clients:
+  - slug: mangwon-roughrough
+    status: active
+    priority: high
+    onboarded_at: 2026-06-24
+    primary_query: "망원카페 추천"
+    notes: "첫 실전 클라이언트 (dry-run 단계). 망리단길 디저트 카페."

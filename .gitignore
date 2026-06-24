@@ -1,0 +1,57 @@
+# 환경변수 / 자격증명
+.env
+.env.*
+!.env.example
+**/credentials*
+!**/credentials.example*
+*.key
+*.pem
+secrets/
+clients/*/credentials.*
+clients/*/.env
+
+# 로컬 Claude 설정
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+.next/
+dist/
+build/
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
+Thumbs.db
+
+# 로그 / 임시
+*.log
+logs/
+!clients/*/logs/                    # SOV JSON 결과는 추적 (시계열 분석용)
+!clients/*/logs/sov-*.json
+tmp/
+.cache/
+
+# 클라이언트 민감 데이터 (선택적)
+clients/*/raw-data/
+clients/*/exports/
+
+# Lock files (Claude Code internal)
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
+
+# Dashboard secrets
+dashboard/.env.local
+dashboard/.env.production.local
+
+# OS / IDE 추가
+*.swp
+

@@ -1,0 +1,128 @@
+# ====================================
+# 클라이언트 프로필 — 망원 러프러프 (RUFRUF Mangwon)
+# 온보딩: 2026-06-24
+# ====================================
+# ⚠️ 검증 상태 표기:
+#   [V] = 외부 출처 검증 완료 (다이닝코드/Visit Korea/블로그)
+#   [?] = 미검증 (사장님 확인 필요)
+#   [P] = 성수점 데이터 참고치 (망원점 별도 확인 필요)
+
+client_slug: "mangwon-roughrough"
+status: "active"
+onboarded_at: "2026-06-24"
+
+business:
+  legal_name_ko: "러프러프"                  # [?] 정식 사업자명 미확인
+  legal_name_en: "RUFRUF"                    # [V] 영문 표기 RUFRUF / Ruf Ruf
+  brand_name: "러프러프 망원점"               # [V]
+  business_number: ""                         # [?] 사업자등록번호 미확인
+  founding_date: ""                           # [?] 망원점 오픈일 미확인 (신상카페 표현 — 2025~2026 추정)
+  founders:
+    - name: ""                                # [?]
+      title: ""
+      linkedin: ""
+  description:
+    short: "망리단길 바스크 치즈케이크 카페"                                          # 25자
+    medium: "마포구 망원동 포은로에 위치한 디저트 카페. 시그니처는 꾸덕한 러프 라떼와 다양한 크럼블 치즈케이크."   # 60자
+    long: |                                                                            # [V]
+      러프러프(RUFRUF)는 서울 마포구 망원동(망리단길)에 자리한 디저트·베이커리 카페로
+      성수점에 이어 오픈한 망원 분점입니다. 대표 메뉴는 바스크 치즈케이크 베이스에
+      크럼블 토핑을 올린 시그니처 케이크류이며, 꾸덕한 질감의 '러프 라떼(RUF Latte)',
+      청량감 있는 '러프 데이 에이드' 등 시그니처 음료가 함께 인기를 끌고 있습니다.
+      한번 맛본 손님이 다른 치즈케이크를 못 먹는다는 평가로 망원동 카페 신상 핫플로
+      자리잡았습니다.
+  category: "카페 / 디저트 / 베이커리"
+  service_areas:
+    - country: "KR"
+      regions:
+        - "서울특별시 마포구 망원동"
+        - "마포구 합정·서교 (도보권)"
+
+contact:
+  address:
+    street: "포은로 105-1 1층"                # [V] 다이닝코드/블로그 교차 확인
+    city: "서울특별시"
+    region: "마포구"
+    postal_code: ""                           # [?]
+    country: "KR"
+  phone: ""                                   # [?] 망원점 별도 번호 미확인 (성수점: 0507-1460-8203)
+  email: ""                                   # [?]
+  website: ""                                 # [?] 별도 웹사이트 미확인 (인스타 위주 추정)
+  naver_place_url: "https://map.naver.com/p/entry/place/2060513686"  # [V] 사용자 제공
+  naver_place_id: "2060513686"                # [V]
+
+assets:
+  logo_url: ""                                # [?]
+  logo_local_path: ""
+  brand_colors:
+    primary: ""                               # [?]
+    secondary: ""
+
+profiles:
+  google_business: ""                         # [?] 등록 여부 확인 필요
+  linkedin: ""
+  crunchbase: ""
+  wikidata_qid: ""                            # 신생 카페 → Wikidata 등재 안 됨 (생성 후보)
+  wikipedia_ko: ""
+  wikipedia_en: ""
+  youtube_channel: ""
+  instagram: ""                               # [?] @rufruf_mangwon 형태 가능성 — 확인 필요
+  facebook: ""
+  twitter_x: ""
+  industry_directories:
+    - "다이닝코드 (성수점 등록 확인됨)"
+    - "Visit Korea (러프러프 게재)"
+    - "네이버 플레이스 (place_id 2060513686)"
+
+permissions:
+  cms_type: "none"                            # 자체 사이트 없음 → 인스타+네이버+블로그 위주
+  gsc_verified: false                         # 사이트 없으면 GSC 불가
+  ga4_connected: false
+  gbp_manager_access: false                   # Google 비즈니스 프로필 권한 받아야 함
+  youtube_manager: false
+  bing_webmaster: false
+  naver_smartplace_owner: false               # 네이버 스마트플레이스 사장님 권한 — 받기 권장
+
+strategy:
+  target_queries_file: "queries.txt"
+  competitors_file: "competitors.txt"
+  restrictions_file: "restrictions.yaml"
+  approved_claims_file: "approved-claims.yaml"
+  primary_query: "망원카페 추천"               # 🎯 최우선 타깃 쿼리
+  primary_url: "https://map.naver.com/p/entry/place/2060513686"
+
+contract:
+  start_date: "2026-06-24"
+  end_date: ""
+  monthly_fee_krw: 0                          # dry-run / 베이스라인 단계 — 청구 보류
+  payment_terms: ""
+  invoice_email: ""
+
+goals:
+  sov_target_3m: 0.30                         # 3개월 내 "망원카페 추천" 관련 30% 인용
+  sov_target_6m: 0.45
+  baseline_sov: 0.00                          # 2026-06-24 측정: 80쿼리 중 20 성공, 우리 0건 인용
+  baseline_date: "2026-06-24"
+  baseline_notes: |
+    Gemini 2.5 Flash + google_search grounding 기준
+    - "망원카페 추천": 답변에 10개 URL 인용 → 러프러프 0건
+    - "망원동 카페 추천": 10개 인용 → 디에디트(매체)만 등장
+    - "망리단길 카페 추천": 8개 인용 → 티노마드만 등장
+    - 80쿼리 중 60개 429 Rate Limit (Flash grounding RPM 한도 추정)
+    - 도미넌트 큐레이션 소스: 디에디트(the-edit.co.kr), 다이닝코드
+  primary_kpi: "Gemini 답변 내 '망원 러프러프 / RUFRUF' 멘션 또는 naver place URL 인용"
+
+# --- 검증/리서치 메모 ---
+research_sources:
+  - "다이닝코드 러프러프 성수점: https://www.diningcode.com/profile.php?rid=a3p5II0KMDSf"
+  - "Visit Korea 러프러프: https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=236a8218-1fb8-41ca-8438-c073f9480680"
+  - "Keyzard 망원점 후기: https://www.keyzard.cc/rudxkr0539/nb/224101226203 (403 차단됨)"
+
+confirmation_needed:           # 사장님 1차 인터뷰 시 확인할 항목
+  - "정확한 사업자명/대표자명"
+  - "망원점 영업시간/휴무일/전화번호"
+  - "공식 인스타 계정 핸들"
+  - "전체 메뉴와 가격표"
+  - "오픈일(망원점)"
+  - "네이버 스마트플레이스 사장님 권한 위임 가능 여부"
+  - "구글 비즈니스 프로필 등록 여부 + 권한 위임"

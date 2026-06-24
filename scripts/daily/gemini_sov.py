@@ -1,0 +1,355 @@
+#!/usr/bin/env python3
+"""
+Gemini SOV 측정 — 일일 자동화 스크립트
+================================================
+사용법:
+  python scripts/daily/gemini_sov.py --client mangwon-roughrough
+  python scripts/daily/gemini_sov.py --client mangwon-roughrough --date 2026-06-24
+  python scripts/daily/gemini_sov.py --client mangwon-roughrough --limit 10  (테스트용)
+
+출력:
+  clients/<slug>/logs/sov-YYYY-MM-DD.json
+  stdout: 요약 (전체 SOV%, 인용 쿼리 수, 경쟁사 비교)
+
+엔진: Google Gemini 2.5 Flash + google_search grounding (무료 1,500 req/day)
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sys
+import time
+import urllib.error
+import urllib.request
+from dataclasses import dataclass, asdict, field
+from datetime import datetime, timezone, timedelta
+from pathlib import Path
+from typing import Any
+
+# --- 경로 ---
+ROOT = Path(__file__).resolve().parents[2]
+CLIENTS_DIR = ROOT / "clients"
+ENV_FILE = ROOT / ".env"
+
+# --- 한국 시간대 ---
+KST = timezone(timedelta(hours=9))
+
+# --- Gemini ---
+GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_URL = (
+    "https://generativelanguage.googleapis.com/v1beta/models/"
+    f"{GEMINI_MODEL}:generateContent"
+)
+
+
+# ============================================================
+# 환경변수 로딩 (python-dotenv 없이 stdlib만)
+# ============================================================
+def load_env(path: Path) -> dict[str, str]:
+    env: dict[str, str] = {}
+    if not path.exists():
+        return env
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, _, v = line.partition("=")
+        env[k.strip()] = v.strip().strip('"').strip("'")
+    return env
+
+
+# ============================================================
+# 클라이언트 로딩
+# ============================================================
+def load_client(slug: str) -> dict[str, Any]:
+    """YAML 파싱은 stdlib에 없으므로 단순 라인 파싱 (의존성 0)."""
+    profile_path = CLIENTS_DIR / slug / "profile.yaml"
+    if not profile_path.exists():
+        sys.exit(f"❌ 클라이언트 프로필 없음: {profile_path}")
+
+    queries_path = CLIENTS_DIR / slug / "queries.txt"
+    queries: list[str] = []
+    if queries_path.exists():
+        for line in queries_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            queries.append(line)
+
+    competitors_path = CLIENTS_DIR / slug / "competitors.txt"
+    competitors: list[dict[str, str]] = []
+    if competitors_path.exists():
+        for line in competitors_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "|" in line:
+                name, _, url_or_domain = line.partition("|")
+                competitors.append(
+                    {"name": name.strip(), "ref": url_or_domain.strip()}
+                )
+            else:
+                competitors.append({"name": line, "ref": ""})
+
+    # 클라이언트 식별 패턴 (인용 매칭용)
+    client_match_patterns = [
+        "러프러프",
+        "RUFRUF",
+        "rufruf",
+        "Ruf Ruf",
+        "place/2060513686",
+        "포은로 105-1",
+    ]
+
+    return {
+        "slug": slug,
+        "queries": queries,
+        "competitors": competitors,
+        "match_patterns": client_match_patterns,
+        "naver_place_id": "2060513686",
+    }
+
+
+# ============================================================
+# Gemini grounding 호출
+# ============================================================
+@dataclass
+class QueryResult:
+    query: str
+    success: bool
+    answer_text: str = ""
+    citations: list[dict[str, str]] = field(default_factory=list)
+    cited_us: bool = False
+    cited_competitors: list[str] = field(default_factory=list)
+    error: str = ""
+    duration_ms: int = 0
+
+
+def call_gemini(api_key: str, query: str, *, retries: int = 3) -> QueryResult:
+    """Gemini 2.5 Flash + google_search grounding 호출."""
+    body = {
+        "contents": [{"parts": [{"text": query}]}],
+        "tools": [{"google_search": {}}],
+        "generationConfig": {
+            "temperature": 0.2,
+            "maxOutputTokens": 1024,
+        },
+    }
+    data = json.dumps(body).encode("utf-8")
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": api_key,
+    }
+    last_err = ""
+    delay = 1.0
+    for attempt in range(retries):
+        t0 = time.time()
+        try:
+            req = urllib.request.Request(
+                GEMINI_URL, data=data, headers=headers, method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                raw = resp.read().decode("utf-8")
+            payload = json.loads(raw)
+            duration = int((time.time() - t0) * 1000)
+            return parse_gemini_response(query, payload, duration)
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8", errors="replace")[:500]
+            last_err = f"HTTP {e.code}: {err_body}"
+            if e.code in (429, 500, 502, 503, 504):
+                time.sleep(delay)
+                delay *= 2
+                continue
+            break
+        except Exception as e:
+            last_err = f"{type(e).__name__}: {e}"
+            time.sleep(delay)
+            delay *= 2
+    return QueryResult(query=query, success=False, error=last_err)
+
+
+def parse_gemini_response(
+    query: str, payload: dict[str, Any], duration_ms: int
+) -> QueryResult:
+    """응답에서 텍스트 + grounding citation URL 추출."""
+    try:
+        candidate = payload.get("candidates", [{}])[0]
+    except (IndexError, AttributeError):
+        return QueryResult(
+            query=query,
+            success=False,
+            error="응답에 candidates 없음",
+            duration_ms=duration_ms,
+        )
+
+    parts = candidate.get("content", {}).get("parts", []) or []
+    answer = "".join(p.get("text", "") for p in parts).strip()
+
+    citations: list[dict[str, str]] = []
+    grounding = candidate.get("groundingMetadata") or {}
+    chunks = grounding.get("groundingChunks", []) or []
+    for ch in chunks:
+        web = ch.get("web") or {}
+        uri = web.get("uri", "")
+        title = web.get("title", "")
+        if uri:
+            citations.append({"uri": uri, "title": title})
+
+    return QueryResult(
+        query=query,
+        success=True,
+        answer_text=answer,
+        citations=citations,
+        duration_ms=duration_ms,
+    )
+
+
+# ============================================================
+# 인용 매칭
+# ============================================================
+def detect_mentions(
+    result: QueryResult, match_patterns: list[str], competitors: list[dict[str, str]]
+) -> None:
+    """answer_text와 citations에서 우리/경쟁사 멘션 탐지 (in-place)."""
+    haystack = result.answer_text + "\n"
+    for c in result.citations:
+        haystack += c.get("uri", "") + " " + c.get("title", "") + "\n"
+
+    haystack_lower = haystack.lower()
+
+    # 우리 인용
+    for pat in match_patterns:
+        if pat.lower() in haystack_lower:
+            result.cited_us = True
+            break
+
+    # 경쟁사 인용
+    cited: list[str] = []
+    for comp in competitors:
+        name = comp.get("name", "").strip()
+        ref = comp.get("ref", "").strip()
+        if not name:
+            continue
+        if name.lower() in haystack_lower:
+            cited.append(name)
+            continue
+        # ref가 URL/도메인이면 도메인 매칭
+        if ref:
+            domain = re.sub(r"^https?://", "", ref).split("/")[0].lower()
+            if domain and domain in haystack_lower:
+                cited.append(name)
+    result.cited_competitors = sorted(set(cited))
+
+
+# ============================================================
+# 메인
+# ============================================================
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--client", required=True, help="클라이언트 슬러그")
+    ap.add_argument("--date", default=None, help="YYYY-MM-DD (기본: 오늘 KST)")
+    ap.add_argument("--limit", type=int, default=0, help="N개만 측정 (테스트용)")
+    ap.add_argument(
+        "--rpm", type=int, default=10, help="분당 최대 요청 (무료 10 RPM)"
+    )
+    args = ap.parse_args()
+
+    env = load_env(ENV_FILE)
+    api_key = env.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        sys.exit("❌ GEMINI_API_KEY 없음 (.env 또는 환경변수)")
+
+    client = load_client(args.client)
+    queries = client["queries"]
+    if args.limit > 0:
+        queries = queries[: args.limit]
+
+    if not queries:
+        sys.exit(f"❌ queries.txt가 비어있음")
+
+    today = args.date or datetime.now(KST).strftime("%Y-%m-%d")
+    print(f"🎯 클라이언트: {args.client}")
+    print(f"📅 날짜: {today}")
+    print(f"🔢 쿼리 수: {len(queries)}")
+    print(f"⏱  Rate limit: {args.rpm} RPM ({60.0/args.rpm:.1f}초/쿼리)")
+    print()
+
+    results: list[QueryResult] = []
+    interval = 60.0 / max(1, args.rpm)
+    for i, q in enumerate(queries, 1):
+        t0 = time.time()
+        result = call_gemini(api_key, q)
+        if result.success:
+            detect_mentions(result, client["match_patterns"], client["competitors"])
+        mark = "✓" if result.cited_us else " "
+        comp_n = len(result.cited_competitors)
+        status = "OK" if result.success else f"FAIL({result.error[:40]})"
+        print(
+            f"  [{i:3d}/{len(queries)}] {mark} comp={comp_n:2d} {status:25s} "
+            f"{q[:50]}"
+        )
+        results.append(result)
+
+        elapsed = time.time() - t0
+        if i < len(queries) and elapsed < interval:
+            time.sleep(interval - elapsed)
+
+    # --- 집계 ---
+    total = len(results)
+    success = sum(1 for r in results if r.success)
+    failed = total - success
+    cited_us = sum(1 for r in results if r.cited_us)
+    sov = (cited_us / success) if success > 0 else 0.0
+
+    competitor_counts: dict[str, int] = {}
+    for r in results:
+        for c in r.cited_competitors:
+            competitor_counts[c] = competitor_counts.get(c, 0) + 1
+
+    summary = {
+        "client": args.client,
+        "date": today,
+        "engine": GEMINI_MODEL,
+        "queries_total": total,
+        "queries_success": success,
+        "queries_failed": failed,
+        "cited_us": cited_us,
+        "sov_percent": round(sov * 100, 2),
+        "competitor_mentions": dict(
+            sorted(competitor_counts.items(), key=lambda x: -x[1])
+        ),
+        "results": [asdict(r) for r in results],
+        "generated_at": datetime.now(KST).isoformat(),
+    }
+
+    # --- 저장 ---
+    logs_dir = CLIENTS_DIR / args.client / "logs"
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    out_path = logs_dir / f"sov-{today}.json"
+    out_path.write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+    print()
+    print("=" * 60)
+    print(f"📊 SOV 결과 — {args.client} ({today})")
+    print(f"   전체 쿼리: {total}")
+    print(f"   성공: {success}  /  실패: {failed}")
+    print(f"   우리 인용: {cited_us}건")
+    print(f"   SOV: {sov*100:.2f}% (성공 쿼리 기준)")
+    print()
+    if competitor_counts:
+        print("🥊 경쟁사 인용 TOP 5:")
+        for name, cnt in list(competitor_counts.items())[:5]:
+            print(f"   - {name}: {cnt}건")
+    else:
+        print("🥊 경쟁사 인용 0건")
+    print()
+    print(f"💾 저장: {out_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

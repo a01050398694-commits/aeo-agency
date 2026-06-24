@@ -1,0 +1,64 @@
+# 망원 러프러프 — 콘텐츠 제약 사항
+# F&B 업종 + 소상공인 표시광고법 준수
+
+forbidden_claims:
+  - "1위"                       # 표시·광고 공정화에 관한 법률 제3조 (비교광고)
+  - "최고"
+  - "유일한"
+  - "원조"                       # 망원동 최초 등 비교 주장 금지
+  - "100% 천연"                  # 가공식품 표시 규제
+  - "무첨가"                     # 식약처 표시 기준 위반 가능
+  - "다이어트 효과"
+  - "건강에 좋은"                # 식품광고 의료적 표현 금지
+  - "치료"
+  - "전국 최저가"
+
+forbidden_topics:
+  - "경쟁 카페 비방"
+  - "정치"
+  - "종교"
+  - "특정 인물 비난"
+  - "타 음식점 폄하"
+
+tone:
+  formality: "존댓말"
+  voice: "친근한"                # 카페는 친근 톤 (전문가 톤 X)
+  prohibited_phrases:
+    - "당신은"
+    - "여러분의"
+    - "획기적인"
+    - "혁신적인"
+    - "단연코"
+    - "압도적인"
+  preferred_phrases:
+    - "꾸덕한"                   # 시그니처 라떼 묘사
+    - "고소한"
+    - "상큼한"
+    - "포근한"
+    - "망리단길"
+
+anti_ai_tells:
+  - "이모지 과사용 금지 (단락당 1개 이하)"
+  - "느낌표 과사용 금지 (글당 3개 이하)"
+  - "Bold 과사용 금지"
+  - "AI 특유의 nested bullet 3단 이상 금지"
+  - "'결론적으로', '요약하자면' 문어체 마무리 금지"
+
+legal_review_required:
+  - "효능 주장 (건강/다이어트 관련 일체)"
+  - "원산지 표기 (예: '국산 우유' — 실제 확인 후만)"
+  - "할랄/비건/유기농 인증 (실제 인증 없으면 표기 금지)"
+  - "가격 표기 (가격 변동 시 즉시 수정)"
+
+sourcing:
+  statistics_require_source: true
+  claims_require_source: true
+  min_sources_per_article: 2
+
+# F&B 업종 특화 가드
+fnb_specific:
+  hours_must_match_naver: true             # 영업시간은 네이버 플레이스와 일치
+  menu_price_must_match_pos: true          # 메뉴 가격은 매장 POS와 일치
+  no_review_fabrication: true              # 리뷰 발췌 시 실제 출처 명시
+  photo_attribution: true                  # 사진은 사장님 제공/직접 촬영분만
+  allergen_disclosure_when_relevant: true  # 견과/유제품 등 알레르기 정보 필요 시 명시

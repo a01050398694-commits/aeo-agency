@@ -1,0 +1,8 @@
+# 경쟁사 도메인 (한 줄당 1개)
+# 5~10개 권장
+# 형식: 도메인만 (https:// 제외)
+#
+# 예시:
+# competitor1.com
+# competitor2.co.kr
+# competitor3.kr

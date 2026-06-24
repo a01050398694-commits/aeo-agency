@@ -1,0 +1,51 @@
+{
+  "@context": "https://schema.org",
+  "@type": "CafeOrCoffeeShop",
+  "name": "러프러프 망원점",
+  "alternateName": ["RUFRUF Mangwon", "Ruf Ruf"],
+  "description": "망리단길 바스크 치즈케이크 카페. 시그니처 러프 라떼와 크럼블 치즈케이크.",
+  "image": [],
+  "url": "https://map.naver.com/p/entry/place/2060513686",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "포은로 105-1 1층",
+    "addressLocality": "마포구",
+    "addressRegion": "서울특별시",
+    "postalCode": "",
+    "addressCountry": "KR"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 37.5564948,
+    "longitude": 126.9046239
+  },
+  "telephone": "",
+  "priceRange": "₩₩",
+  "servesCuisine": ["디저트", "베이커리", "커피", "바스크 치즈케이크"],
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "opens": "",
+      "closes": ""
+    }
+  ],
+  "menu": "https://map.naver.com/p/entry/place/2060513686",
+  "sameAs": [
+    "https://map.naver.com/p/entry/place/2060513686"
+  ],
+  "_validation_notes": [
+    "주소 좌표는 사용자가 공유한 네이버 지도 URL의 lat/lng 파싱본 (lng=126.9046239, lat=37.5564948)",
+    "openingHoursSpecification 빈 문자열 — Rich Results 검증 전에 사장님 확정 시간 입력 필수",
+    "telephone 미확인",
+    "menu URL은 네이버 플레이스 임시 — 자체 메뉴 페이지 생기면 교체"
+  ]
+}

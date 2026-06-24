@@ -1,0 +1,94 @@
+# ====================================
+# 클라이언트 프로필 템플릿
+# 새 클라이언트: 이 파일을 clients/<slug>/profile.yaml 로 복사 후 채우기
+# ====================================
+
+# --- 기본 정보 ---
+client_slug: ""              # 폴더명과 일치 (영문 소문자 + 하이픈)
+status: "active"             # active | paused | churned
+onboarded_at: ""             # YYYY-MM-DD
+
+# --- 비즈니스 ---
+business:
+  legal_name_ko: ""          # 정식 법인명 (한글)
+  legal_name_en: ""          # 정식 법인명 (영문)
+  brand_name: ""             # 브랜드명 (다를 경우)
+  business_number: ""        # 사업자등록번호
+  founding_date: ""          # YYYY-MM-DD
+  founders:
+    - name: ""
+      title: ""
+      linkedin: ""
+  description:
+    short: ""                # 50자
+    medium: ""               # 150자
+    long: ""                 # 500자
+  category: ""               # 주요 업종 (Google 분류 기준)
+  service_areas:             # 서비스 지역
+    - country: "KR"
+      regions: []
+
+# --- 연락처 (NAP) ---
+contact:
+  address:
+    street: ""
+    city: ""
+    region: ""
+    postal_code: ""
+    country: "KR"
+  phone: "+82-"
+  email: ""
+  website: ""
+
+# --- 자산 ---
+assets:
+  logo_url: ""               # 정사각 512px+ PNG
+  logo_local_path: ""
+  brand_colors:
+    primary: ""
+    secondary: ""
+
+# --- 디지털 존재 (sameAs) ---
+profiles:
+  google_business: ""
+  linkedin: ""
+  crunchbase: ""
+  wikidata_qid: ""           # Q123456789
+  wikipedia_ko: ""
+  wikipedia_en: ""
+  youtube_channel: ""
+  instagram: ""
+  facebook: ""
+  twitter_x: ""
+  github: ""                 # B2B만
+  industry_directories: []
+
+# --- 권한 (자격증명은 credentials.env 에 별도) ---
+permissions:
+  cms_type: ""               # wordpress | webflow | shopify | cafe24 | other
+  gsc_verified: false
+  ga4_connected: false
+  gbp_manager_access: false
+  youtube_manager: false
+  bing_webmaster: false
+
+# --- 전략 가드레일 ---
+strategy:
+  target_queries_file: "queries.txt"
+  competitors_file: "competitors.txt"
+  restrictions_file: "restrictions.yaml"
+  approved_claims_file: "approved-claims.yaml"
+
+# --- 계약 / 청구 ---
+contract:
+  start_date: ""
+  end_date: ""
+  monthly_fee_krw: 0
+  payment_terms: ""          # 선불 / 후불 / 분할
+  invoice_email: ""
+
+# --- KPI 목표 ---
+goals:
+  sov_target_3m: 0.30        # 3개월 목표 SOV (예: 30%)
+  sov_target_6m: 0.45
+  baseline_sov: null         # 온보딩 시 측정
