@@ -23,6 +23,8 @@ User-agent: ClaudeBot
 Allow: /
 
 Sitemap: https://aeo-agency.vercel.app/r/rufruf/sitemap.xml
+Sitemap: https://aeo-agency.vercel.app/pro/thebom-tax/sitemap.xml
+Sitemap: https://aeo-agency.vercel.app/agency/sitemap.xml
 `
   return new NextResponse(body, {
     headers: { "Content-Type": "text/plain", "Cache-Control": "public, max-age=3600" },
