@@ -98,3 +98,7 @@ export default async function LocationPage({
     </>
   )
 }
+
+export async function generateStaticParams() {
+  return [{ slug: "rufruf" }, { slug: "rufruf-mangwon" }]
+}

@@ -42,3 +42,7 @@ export default async function FaqPage({
     </>
   )
 }
+
+export async function generateStaticParams() {
+  return [{ slug: "rufruf" }, { slug: "rufruf-mangwon" }]
+}

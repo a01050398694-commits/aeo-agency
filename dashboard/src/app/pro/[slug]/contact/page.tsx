@@ -70,3 +70,7 @@ export default async function ProContact({
     </>
   )
 }
+
+export async function generateStaticParams() {
+  return [{ slug: "thebom-tax" }, { slug: "thebom" }]
+}

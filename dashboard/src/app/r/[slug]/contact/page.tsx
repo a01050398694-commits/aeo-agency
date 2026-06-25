@@ -77,3 +77,7 @@ export default async function ContactPage({
     </>
   )
 }
+
+export async function generateStaticParams() {
+  return [{ slug: "rufruf" }, { slug: "rufruf-mangwon" }]
+}

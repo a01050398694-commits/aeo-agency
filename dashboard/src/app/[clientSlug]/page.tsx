@@ -124,3 +124,7 @@ export default async function ClientPortal({
     </div>
   )
 }
+
+export async function generateStaticParams() {
+  return [{ clientSlug: "thebom-tax" }, { clientSlug: "rufruf" }, { clientSlug: "rufruf-mangwon" }, { clientSlug: "thebom" }]
+}

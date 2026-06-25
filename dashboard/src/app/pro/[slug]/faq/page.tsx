@@ -41,3 +41,7 @@ export default async function ProFaq({
     </>
   )
 }
+
+export async function generateStaticParams() {
+  return [{ slug: "thebom-tax" }, { slug: "thebom" }]
+}

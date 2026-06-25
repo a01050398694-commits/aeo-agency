@@ -1,0 +1,92 @@
+name: Deploy to GitHub Pages
+
+# 사용자 액션 0 — Vercel/Cloudflare/Netlify 토큰 모두 불가 시 자동 우회
+# 공개 페이지(/pro, /r, /agency)만 static export → ops/api 는 빌드 제외
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dashboard/**"
+      - ".github/workflows/pages-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: Exclude dynamic routes from export
+        working-directory: dashboard
+        run: |
+          set -euo pipefail
+          # 빌드 시 force-dynamic 페이지들을 임시 이동 (export 시 빌드 실패)
+          mkdir -p _build_excluded/src/app
+          for d in src/app/ops src/app/api "src/app/[clientSlug]"; do
+            if [ -d "$d" ]; then
+              mv "$d" _build_excluded/src/app/ && echo "moved $d"
+            fi
+          done
+          # sitemap route handler (force-dynamic) 임시 이동
+          for sm in src/app/agency/sitemap.xml "src/app/pro/[slug]/sitemap.xml" "src/app/r/[slug]/sitemap.xml"; do
+            if [ -d "$sm" ]; then
+              dst="_build_excluded/$sm"
+              mkdir -p "$(dirname "$dst")"
+              mv "$sm" "$dst" && echo "moved $sm"
+            fi
+          done
+
+      - name: Build (NEXT_EXPORT mode)
+        working-directory: dashboard
+        env:
+          NEXT_EXPORT: "1"
+          GITHUB_REPO: aeo-agency
+          NODE_ENV: production
+        run: |
+          npm run build
+          # out/ 에 정적 결과
+          ls -la out | head -20 || true
+
+      - name: Add .nojekyll
+        working-directory: dashboard
+        run: touch out/.nojekyll
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

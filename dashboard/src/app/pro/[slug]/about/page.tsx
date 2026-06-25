@@ -77,3 +77,7 @@ export default async function ProAbout({
     </>
   )
 }
+
+export async function generateStaticParams() {
+  return [{ slug: "thebom-tax" }, { slug: "thebom" }]
+}

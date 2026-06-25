@@ -141,3 +141,7 @@ export default async function SiteHome({
     </>
   )
 }
+
+export async function generateStaticParams() {
+  return [{ slug: "rufruf" }, { slug: "rufruf-mangwon" }]
+}

@@ -138,3 +138,7 @@ export default async function ProHome({
     </>
   )
 }
+
+export async function generateStaticParams() {
+  return [{ slug: "thebom-tax" }, { slug: "thebom" }]
+}
