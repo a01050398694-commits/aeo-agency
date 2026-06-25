@@ -6,7 +6,22 @@
 ---
 
 ## 📅 마지막 작업 시점
-**2026-06-24** (정상화 사이클 — cron 검증/Gemini 키 leak 발견/Resend askbit.co 등록/Wikidata·OSM 사양 준비)
+**2026-06-25** (Day 0 베이스라인 확보 + 멀티엔진 + FAQ 28건 보강 + 자동 적재)
+
+### 🆕 이번 사이클 핵심 변화
+- ✅ **Day 0 베이스라인 확정** (ChatGPT 엔진 기준)
+  - 더봄세무 SOV **2.50%** (2/80, thebomtax.com citations)
+  - 망원 러프러프 SOV **1.25%** (1/80, 본문 1건)
+- ✅ **ChatGPT 엔진 추가** (`gpt-4o-mini-search-preview`, 80쿼리 약 $0.02)
+  - scripts/daily/chatgpt_sov.py 신규 (gemini_sov.py 미러)
+  - daily-sov.yml 워크플로우 듀얼 엔진 (한쪽 실패해도 다른쪽)
+- ✅ **Supabase 자동 upsert** 추가 (gemini_sov + chatgpt_sov 둘 다)
+- ✅ **매칭 로직 false positive 수정** (domain/name 분리, 질문 단어 본문 매칭 제외)
+- ✅ **FAQ 28건 보강** (더봄 8→18 / 망원 8→18, AEO 직접 인용용)
+- ✅ **robots.txt 멀티 sitemap 등록** (rufruf + thebom + agency)
+- ✅ **GitHub Actions cron 자동 발화 검증** (run #28125239718 success)
+- ✅ **Resend askbit.co 도메인 등록** (DNS 레코드 3건 응답 확보)
+- ✅ **answer-blocks 콘텐츠** 더봄 2건 신규 작성
 
 ---
 
