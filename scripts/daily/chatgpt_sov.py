@@ -80,19 +80,23 @@ def load_client(slug: str) -> dict[str, Any]:
             else:
                 competitors.append({"name": line, "ref": ""})
 
-    # 클라이언트별 매칭 패턴
+    # 클라이언트별 매칭 패턴 — domain 우선(citations), name 보조(본문, 질문 미포함 시만)
     if slug == "mangwon-roughrough":
-        patterns = ["러프러프", "RUFRUF", "rufruf", "Ruf Ruf", "place/2060513686", "포은로 105-1"]
+        domain_pats = ["place/2060513686", "rufruf.com"]
+        name_pats = ["러프러프", "RUFRUF", "Ruf Ruf", "포은로 105-1"]
     elif slug == "thebom-tax":
-        patterns = ["더봄", "thebomtax", "thebom-tax", "thebomtax.com", "월드컵북로 4길 47", "홍지영"]
+        domain_pats = ["thebomtax.com", "thebomtax"]
+        name_pats = ["세무법인 더봄", "홍지영", "월드컵북로 4길 47"]
     else:
-        patterns = []
+        domain_pats = []
+        name_pats = []
 
     return {
         "slug": slug,
         "queries": queries,
         "competitors": competitors,
-        "match_patterns": patterns,
+        "domain_patterns": domain_pats,
+        "name_patterns": name_pats,
     }
 
 
@@ -167,28 +171,62 @@ def parse_chatgpt_response(query: str, payload: dict[str, Any], duration_ms: int
     )
 
 
-def detect_mentions(result: QueryResult, match_patterns: list[str], competitors: list[dict[str, str]]) -> None:
-    hay = result.answer_text + "\n"
+def detect_mentions(
+    result: QueryResult,
+    domain_patterns: list[str],
+    name_patterns: list[str],
+    competitors: list[dict[str, str]],
+) -> None:
+    """SOV 카운트는 둘 중 하나일 때 True:
+    1) citations URL의 도메인이 우리 패턴과 일치 (강력 신호)
+    2) 본문에 우리 이름 패턴 — 단 질문에 그 패턴이 이미 있으면 False positive로 제외
+    """
+    q_low = result.query.lower()
+    ans_low = result.answer_text.lower()
+
+    # 1) citations URL 매칭
+    url_hit = False
     for c in result.citations:
-        hay += c.get("uri", "") + " " + c.get("title", "") + "\n"
-    low = hay.lower()
-    for pat in match_patterns:
-        if pat.lower() in low:
-            result.cited_us = True
+        uri_low = (c.get("uri", "") or "").lower()
+        for pat in domain_patterns:
+            if pat.lower() in uri_low:
+                url_hit = True
+                break
+        if url_hit:
             break
+
+    # 2) 본문 매칭 (질문에 패턴 없을 때만)
+    text_hit = False
+    for pat in name_patterns:
+        pat_low = pat.lower()
+        if pat_low in q_low:
+            continue  # 질문에 이미 있으면 본문 매칭은 false positive
+        if pat_low in ans_low:
+            text_hit = True
+            break
+
+    result.cited_us = url_hit or text_hit
+
+    # 경쟁사 매칭 — 같은 로직
     cited: list[str] = []
     for comp in competitors:
         name = comp.get("name", "").strip()
         ref = comp.get("ref", "").strip()
         if not name:
             continue
-        if name.lower() in low:
+        domain = re.sub(r"^https?://", "", ref).split("/")[0].lower() if ref else ""
+        comp_url_hit = False
+        if domain:
+            for c in result.citations:
+                if domain in (c.get("uri", "") or "").lower():
+                    comp_url_hit = True
+                    break
+        comp_text_hit = False
+        name_low = name.lower()
+        if name_low not in q_low and name_low in ans_low:
+            comp_text_hit = True
+        if comp_url_hit or comp_text_hit:
             cited.append(name)
-            continue
-        if ref:
-            domain = re.sub(r"^https?://", "", ref).split("/")[0].lower()
-            if domain and domain in low:
-                cited.append(name)
     result.cited_competitors = sorted(set(cited))
 
 
@@ -266,7 +304,7 @@ def main() -> int:
         t0 = time.time()
         r = call_chatgpt(api_key, q)
         if r.success:
-            detect_mentions(r, client["match_patterns"], client["competitors"])
+            detect_mentions(r, client["domain_patterns"], client["name_patterns"], client["competitors"])
         mark = "✓" if r.cited_us else " "
         comp_n = len(r.cited_competitors)
         status = "OK" if r.success else f"FAIL({r.error[:40]})"

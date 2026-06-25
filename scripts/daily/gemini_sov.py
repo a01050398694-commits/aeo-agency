@@ -93,22 +93,27 @@ def load_client(slug: str) -> dict[str, Any]:
             else:
                 competitors.append({"name": line, "ref": ""})
 
-    # 클라이언트 식별 패턴 (인용 매칭용)
-    client_match_patterns = [
-        "러프러프",
-        "RUFRUF",
-        "rufruf",
-        "Ruf Ruf",
-        "place/2060513686",
-        "포은로 105-1",
-    ]
+    # 클라이언트별 매칭 패턴 — domain 우선(citations), name 보조(본문, 질문 미포함 시만)
+    if slug == "mangwon-roughrough":
+        domain_pats = ["place/2060513686", "rufruf.com"]
+        name_pats = ["러프러프", "RUFRUF", "Ruf Ruf", "포은로 105-1"]
+        place_id = "2060513686"
+    elif slug == "thebom-tax":
+        domain_pats = ["thebomtax.com", "thebomtax"]
+        name_pats = ["세무법인 더봄", "홍지영", "월드컵북로 4길 47"]
+        place_id = ""
+    else:
+        domain_pats = []
+        name_pats = []
+        place_id = ""
 
     return {
         "slug": slug,
         "queries": queries,
         "competitors": competitors,
-        "match_patterns": client_match_patterns,
-        "naver_place_id": "2060513686",
+        "domain_patterns": domain_pats,
+        "name_patterns": name_pats,
+        "naver_place_id": place_id,
     }
 
 
@@ -210,36 +215,58 @@ def parse_gemini_response(
 # 인용 매칭
 # ============================================================
 def detect_mentions(
-    result: QueryResult, match_patterns: list[str], competitors: list[dict[str, str]]
+    result: QueryResult,
+    domain_patterns: list[str],
+    name_patterns: list[str],
+    competitors: list[dict[str, str]],
 ) -> None:
-    """answer_text와 citations에서 우리/경쟁사 멘션 탐지 (in-place)."""
-    haystack = result.answer_text + "\n"
+    """SOV 카운트는 둘 중 하나일 때 True:
+    1) citations URL의 도메인이 우리 패턴과 일치 (강력 신호)
+    2) 본문에 우리 이름 패턴 — 단 질문에 그 패턴이 이미 있으면 False positive로 제외
+    """
+    q_low = result.query.lower()
+    ans_low = result.answer_text.lower()
+
+    url_hit = False
     for c in result.citations:
-        haystack += c.get("uri", "") + " " + c.get("title", "") + "\n"
-
-    haystack_lower = haystack.lower()
-
-    # 우리 인용
-    for pat in match_patterns:
-        if pat.lower() in haystack_lower:
-            result.cited_us = True
+        uri_low = (c.get("uri", "") or "").lower()
+        for pat in domain_patterns:
+            if pat.lower() in uri_low:
+                url_hit = True
+                break
+        if url_hit:
             break
 
-    # 경쟁사 인용
+    text_hit = False
+    for pat in name_patterns:
+        pat_low = pat.lower()
+        if pat_low in q_low:
+            continue
+        if pat_low in ans_low:
+            text_hit = True
+            break
+
+    result.cited_us = url_hit or text_hit
+
     cited: list[str] = []
     for comp in competitors:
         name = comp.get("name", "").strip()
         ref = comp.get("ref", "").strip()
         if not name:
             continue
-        if name.lower() in haystack_lower:
+        domain = re.sub(r"^https?://", "", ref).split("/")[0].lower() if ref else ""
+        comp_url_hit = False
+        if domain:
+            for c in result.citations:
+                if domain in (c.get("uri", "") or "").lower():
+                    comp_url_hit = True
+                    break
+        comp_text_hit = False
+        name_low = name.lower()
+        if name_low not in q_low and name_low in ans_low:
+            comp_text_hit = True
+        if comp_url_hit or comp_text_hit:
             cited.append(name)
-            continue
-        # ref가 URL/도메인이면 도메인 매칭
-        if ref:
-            domain = re.sub(r"^https?://", "", ref).split("/")[0].lower()
-            if domain and domain in haystack_lower:
-                cited.append(name)
     result.cited_competitors = sorted(set(cited))
 
 
@@ -282,7 +309,7 @@ def main() -> int:
         t0 = time.time()
         result = call_gemini(api_key, q)
         if result.success:
-            detect_mentions(result, client["match_patterns"], client["competitors"])
+            detect_mentions(result, client["domain_patterns"], client["name_patterns"], client["competitors"])
         mark = "✓" if result.cited_us else " "
         comp_n = len(result.cited_competitors)
         status = "OK" if result.success else f"FAIL({result.error[:40]})"
