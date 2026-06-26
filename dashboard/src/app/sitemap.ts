@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/agency/case-studies/aeo-agency-bootstrap/",
     "/agency/case-studies/rufruf-mangwon/",
     "/agency/contact/",
+    "/status/",
   ]
 
   const proRoutes: string[] = []

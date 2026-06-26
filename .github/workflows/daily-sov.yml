@@ -105,6 +105,14 @@ jobs:
           git commit -m "chore(sov): daily measurement $DATE (gemini+chatgpt)"
           git push
 
+      - name: Trigger Pages rebuild (refresh /status 데이터)
+        run: |
+          # cron 측정 후 /status 페이지가 최신 SOV 데이터로 자동 갱신되도록
+          # Pages workflow를 직접 트리거
+          gh workflow run "Deploy to GitHub Pages" --ref main || echo "Pages trigger 실패 (선택사항)"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
