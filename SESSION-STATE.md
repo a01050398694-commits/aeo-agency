@@ -11,14 +11,31 @@
 ### 🌐 라이브 URL (사용자 액션 0회로 자동 배포)
 **https://a01050398694-commits.github.io/aeo-agency/**
 
+📊 **사용자가 매일 새로고침할 URL** (SOV 변화 실시간):
+**https://a01050398694-commits.github.io/aeo-agency/status/**
+  - 클라이언트별 카드 (Day 0 / 최신 / Δ%p, 빨강·초록)
+  - SovLineChart 그래프 (recharts, 시간 추이)
+  - 일별 상세 표
+  - 매일 03:30 KST 자동 신선화 (cron이 Pages workflow_dispatch 트리거)
+
+전체 라우트 (104개, sitemap.xml 등록):
 - 더봄 공개 사이트: `/pro/thebom-tax/` (메인 + about + services + faq + contact + guide)
+  + `/pro/thebom-tax/faq/{18 slug}/` (각 FAQ가 독립 페이지, FAQPage Schema)
 - 망원 공개 사이트: `/r/rufruf/` (메인 + menu + faq + location + contact + guide)
+  + `/r/rufruf/faq/{18 slug}/` (각 FAQ 독립 페이지)
 - 홍보 사이트: `/agency/` (7 페이지)
-- sitemap: `/sitemap.xml` (33 라우트)
+- 운영 상태: `/status/` (실시간 SOV)
+- sitemap: `/sitemap.xml` (104 URL)
 - robots: `/robots.txt` (AI 크롤러 5종 명시 Allow)
 - IndexNow 키: `/f2f88cfbe500b8f7004c777bc8cb015a.txt`
 
 ### 🆕 이번 사이클 핵심 변화
+- ✅ **SOV 변화 시각화 페이지** `/status/` 라이브 (실측 데이터 표시 검증)
+- ✅ **FAQ 36개 독립 페이지** 분리 (인덱스 양 33 → 104 = 3.1배)
+- ✅ **Day 0 → Day 1 첫 비교 데이터** (자동 cron 동작 검증)
+  - 2026-06-25: 더봄 2.50% / 망원 1.25%
+  - 2026-06-26: 더봄 1.25% / 망원 2.50%
+  - 1건 차이 = 통계 노이즈, 진짜 신호는 7~14일 후
 - ✅ **Day 0 베이스라인 확정** (ChatGPT 엔진 기준)
   - 더봄세무 SOV **2.50%** (2/80, thebomtax.com citations)
   - 망원 러프러프 SOV **1.25%** (1/80, 본문 1건)
