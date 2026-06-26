@@ -56,6 +56,12 @@ jobs:
           NEXT_EXPORT: "1"
           GITHUB_REPO: aeo-agency
           NODE_ENV: production
+          # /status 페이지 빌드 시 Supabase에서 SOV 누적 데이터 fetch
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           npm run build
           # out/ 에 정적 결과
