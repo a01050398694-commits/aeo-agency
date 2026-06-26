@@ -48,14 +48,7 @@ jobs:
               mv "$d" _build_excluded/src/app/ && echo "moved $d"
             fi
           done
-          # sitemap route handler (force-dynamic) 임시 이동
-          for sm in src/app/agency/sitemap.xml "src/app/pro/[slug]/sitemap.xml" "src/app/r/[slug]/sitemap.xml"; do
-            if [ -d "$sm" ]; then
-              dst="_build_excluded/$sm"
-              mkdir -p "$(dirname "$dst")"
-              mv "$sm" "$dst" && echo "moved $sm"
-            fi
-          done
+          # (sitemap.xml route handler는 정적 sitemap.ts로 대체됨)
 
       - name: Build (NEXT_EXPORT mode)
         working-directory: dashboard

@@ -12,6 +12,7 @@ export type CafeMenuItem = {
 export type CafeFaq = {
   q: string
   a: string
+  slug?: string
 }
 
 export type CafeReview = {

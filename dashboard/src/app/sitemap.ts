@@ -1,4 +1,6 @@
 import type { MetadataRoute } from "next"
+import { PRO_BY_SLUG } from "@/lib/pro-data/thebom-tax"
+import { SITE_BY_SLUG } from "@/lib/site-data/rufruf-mangwon"
 
 const SITE = "https://a01050398694-commits.github.io/aeo-agency"
 
@@ -6,7 +8,7 @@ export const dynamic = "force-static"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()
-  const routes = [
+  const base = [
     "/",
     "/agency/",
     "/agency/about/",
@@ -16,35 +18,38 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/agency/case-studies/aeo-agency-bootstrap/",
     "/agency/case-studies/rufruf-mangwon/",
     "/agency/contact/",
-    "/pro/thebom-tax/",
-    "/pro/thebom-tax/about/",
-    "/pro/thebom-tax/services/",
-    "/pro/thebom-tax/faq/",
-    "/pro/thebom-tax/contact/",
-    "/pro/thebom-tax/guide/",
-    "/pro/thebom/",
-    "/pro/thebom/about/",
-    "/pro/thebom/services/",
-    "/pro/thebom/faq/",
-    "/pro/thebom/contact/",
-    "/pro/thebom/guide/",
-    "/r/rufruf/",
-    "/r/rufruf/menu/",
-    "/r/rufruf/faq/",
-    "/r/rufruf/location/",
-    "/r/rufruf/contact/",
-    "/r/rufruf/guide/",
-    "/r/rufruf-mangwon/",
-    "/r/rufruf-mangwon/menu/",
-    "/r/rufruf-mangwon/faq/",
-    "/r/rufruf-mangwon/location/",
-    "/r/rufruf-mangwon/contact/",
-    "/r/rufruf-mangwon/guide/",
   ]
-  return routes.map((p) => ({
+
+  const proRoutes: string[] = []
+  for (const [siteSlug, data] of Object.entries(PRO_BY_SLUG)) {
+    proRoutes.push(`/pro/${siteSlug}/`)
+    proRoutes.push(`/pro/${siteSlug}/about/`)
+    proRoutes.push(`/pro/${siteSlug}/services/`)
+    proRoutes.push(`/pro/${siteSlug}/faq/`)
+    proRoutes.push(`/pro/${siteSlug}/contact/`)
+    proRoutes.push(`/pro/${siteSlug}/guide/`)
+    for (const f of data.faqs) {
+      if (f.slug) proRoutes.push(`/pro/${siteSlug}/faq/${f.slug}/`)
+    }
+  }
+
+  const cafeRoutes: string[] = []
+  for (const [siteSlug, data] of Object.entries(SITE_BY_SLUG)) {
+    cafeRoutes.push(`/r/${siteSlug}/`)
+    cafeRoutes.push(`/r/${siteSlug}/menu/`)
+    cafeRoutes.push(`/r/${siteSlug}/faq/`)
+    cafeRoutes.push(`/r/${siteSlug}/location/`)
+    cafeRoutes.push(`/r/${siteSlug}/contact/`)
+    cafeRoutes.push(`/r/${siteSlug}/guide/`)
+    for (const f of data.faqs) {
+      if (f.slug) cafeRoutes.push(`/r/${siteSlug}/faq/${f.slug}/`)
+    }
+  }
+
+  return [...base, ...proRoutes, ...cafeRoutes].map((p) => ({
     url: `${SITE}${p}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
-    priority: p === "/" ? 1.0 : p.endsWith("/faq/") ? 0.9 : 0.7,
+    priority: p === "/" ? 1.0 : p.includes("/faq/") ? 0.8 : p.endsWith("/guide/") ? 0.85 : 0.7,
   }))
 }
