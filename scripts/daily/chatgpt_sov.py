@@ -236,6 +236,8 @@ def upsert_supabase(env: dict[str, str], summary: dict[str, Any], out_path: Path
     if not (url and key):
         print("ℹ️  Supabase 자격증명 없음 — JSON만 저장")
         return
+
+    # 1) sov_measurements (집계)
     row = {
         "client_slug": summary["client"],
         "measured_date": summary["date"],
@@ -248,10 +250,9 @@ def upsert_supabase(env: dict[str, str], summary: dict[str, Any], out_path: Path
         "competitor_top": dict(list(summary["competitor_mentions"].items())[:5]),
         "raw_json_path": str(out_path.relative_to(ROOT)).replace("\\", "/"),
     }
-    data = json.dumps(row).encode("utf-8")
     req = urllib.request.Request(
         f"{url}/rest/v1/sov_measurements?on_conflict=client_slug,measured_date,engine",
-        data=data,
+        data=json.dumps(row).encode("utf-8"),
         headers={
             "apikey": key,
             "Authorization": f"Bearer {key}",
@@ -262,12 +263,48 @@ def upsert_supabase(env: dict[str, str], summary: dict[str, Any], out_path: Path
     )
     try:
         with urllib.request.urlopen(req, timeout=20) as r:
-            print(f"🗄  Supabase upsert OK (HTTP {r.status})")
+            print(f"🗄  sov_measurements upsert OK (HTTP {r.status})")
     except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", errors="replace")[:300]
-        print(f"⚠️  Supabase upsert 실패 HTTP {e.code}: {body}")
+        print(f"⚠️  sov_measurements upsert 실패 HTTP {e.code}: {e.read().decode()[:200]}")
     except Exception as e:
-        print(f"⚠️  Supabase upsert 실패 {type(e).__name__}: {e}")
+        print(f"⚠️  sov_measurements upsert 실패 {type(e).__name__}: {e}")
+
+    # 2) citations (성공한 80개 쿼리별 디테일 — answer + citation URLs)
+    rows = []
+    for r in summary.get("results", []):
+        if not r.get("success"):
+            continue
+        rows.append({
+            "client_slug": summary["client"],
+            "measured_date": summary["date"],
+            "engine": summary["engine"],
+            "query": r["query"],
+            "cited_us": bool(r.get("cited_us")),
+            "cited_competitors": r.get("cited_competitors") or [],
+            "citation_urls": [c.get("uri", "") for c in (r.get("citations") or []) if c.get("uri")],
+            "answer_text": (r.get("answer_text") or "")[:2000],
+            "duration_ms": r.get("duration_ms", 0),
+        })
+    if not rows:
+        return
+    req = urllib.request.Request(
+        f"{url}/rest/v1/citations?on_conflict=client_slug,measured_date,engine,query",
+        data=json.dumps(rows).encode("utf-8"),
+        headers={
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates,return=minimal",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            print(f"🗄  citations bulk upsert OK ({len(rows)} rows, HTTP {r.status})")
+    except urllib.error.HTTPError as e:
+        print(f"⚠️  citations upsert 실패 HTTP {e.code}: {e.read().decode()[:200]}")
+    except Exception as e:
+        print(f"⚠️  citations upsert 실패 {type(e).__name__}: {e}")
 
 
 def main() -> int:

@@ -33,6 +33,33 @@ async function fetchSovData(): Promise<SovRow[]> {
   }
 }
 
+type CitationRow = {
+  client_slug: string
+  measured_date: string
+  query: string
+  cited_us: boolean
+  citation_urls: string[]
+}
+
+async function fetchCitedQueries(): Promise<CitationRow[]> {
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
+  if (!url || !key) return []
+  try {
+    const r = await fetch(
+      `${url}/rest/v1/citations?select=client_slug,measured_date,query,cited_us,citation_urls&cited_us=eq.true&engine=eq.gpt-4o-mini-search-preview&order=measured_date.desc`,
+      {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+        cache: "no-store",
+      }
+    )
+    if (!r.ok) return []
+    return await r.json()
+  } catch {
+    return []
+  }
+}
+
 const CLIENT_INFO: Record<string, { name: string; emoji: string; pageHref: string }> = {
   "thebom-tax": {
     name: "세무법인 더봄",
@@ -48,10 +75,16 @@ const CLIENT_INFO: Record<string, { name: string; emoji: string; pageHref: strin
 
 export default async function StatusPage() {
   const all = await fetchSovData()
+  const cited = await fetchCitedQueries()
   const byClient = new Map<string, SovRow[]>()
   for (const r of all) {
     if (!byClient.has(r.client_slug)) byClient.set(r.client_slug, [])
     byClient.get(r.client_slug)!.push(r)
+  }
+  const citedByClient = new Map<string, CitationRow[]>()
+  for (const c of cited) {
+    if (!citedByClient.has(c.client_slug)) citedByClient.set(c.client_slug, [])
+    citedByClient.get(c.client_slug)!.push(c)
   }
 
   return (
@@ -126,6 +159,31 @@ export default async function StatusPage() {
                 height={240}
               />
             </div>
+
+            {(citedByClient.get(slug) || []).length > 0 ? (
+              <details className="text-sm" open>
+                <summary className="cursor-pointer font-semibold text-foreground/80 hover:text-foreground">
+                  ✅ 우리가 인용된 쿼리 ({(citedByClient.get(slug) || []).length}건)
+                </summary>
+                <ul className="mt-3 space-y-2">
+                  {(citedByClient.get(slug) || []).slice(0, 20).map((c, i) => (
+                    <li key={i} className="border-l-2 border-green-500 pl-3 py-1">
+                      <div className="font-mono text-xs text-muted-foreground">{c.measured_date}</div>
+                      <div className="font-medium">&ldquo;{c.query}&rdquo;</div>
+                      {c.citation_urls && c.citation_urls.length > 0 ? (
+                        <div className="text-xs text-foreground/60 mt-1 space-y-0.5">
+                          {c.citation_urls.slice(0, 3).map((u, j) => (
+                            <div key={j} className="truncate">
+                              ↳ <a href={u} target="_blank" rel="noreferrer" className="hover:underline">{u}</a>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ) : null}
 
             <details className="text-sm">
               <summary className="cursor-pointer text-foreground/70 hover:text-foreground">

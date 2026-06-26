@@ -408,12 +408,48 @@ def main() -> int:
             )
             with urllib.request.urlopen(req, timeout=20) as r:
                 code = r.status
-            print(f"🗄  Supabase upsert OK (HTTP {code})")
+            print(f"🗄  sov_measurements upsert OK (HTTP {code})")
         except urllib.error.HTTPError as e:
             body = e.read().decode("utf-8", errors="replace")[:300]
-            print(f"⚠️  Supabase upsert 실패 HTTP {e.code}: {body}")
+            print(f"⚠️  sov_measurements upsert 실패 HTTP {e.code}: {body}")
         except Exception as e:
-            print(f"⚠️  Supabase upsert 실패 {type(e).__name__}: {e}")
+            print(f"⚠️  sov_measurements upsert 실패 {type(e).__name__}: {e}")
+
+        # citations bulk upsert (성공한 쿼리별 디테일)
+        try:
+            citation_rows = []
+            for r in results:
+                if not r.success:
+                    continue
+                citation_rows.append({
+                    "client_slug": args.client,
+                    "measured_date": today,
+                    "engine": GEMINI_MODEL,
+                    "query": r.query,
+                    "cited_us": bool(r.cited_us),
+                    "cited_competitors": r.cited_competitors or [],
+                    "citation_urls": [c.get("uri", "") for c in (r.citations or []) if c.get("uri")],
+                    "answer_text": (r.answer_text or "")[:2000],
+                    "duration_ms": r.duration_ms or 0,
+                })
+            if citation_rows:
+                req = urllib.request.Request(
+                    f"{sb_url}/rest/v1/citations?on_conflict=client_slug,measured_date,engine,query",
+                    data=json.dumps(citation_rows).encode("utf-8"),
+                    headers={
+                        "apikey": sb_key,
+                        "Authorization": f"Bearer {sb_key}",
+                        "Content-Type": "application/json",
+                        "Prefer": "resolution=merge-duplicates,return=minimal",
+                    },
+                    method="POST",
+                )
+                with urllib.request.urlopen(req, timeout=30) as r:
+                    print(f"🗄  citations bulk upsert OK ({len(citation_rows)} rows, HTTP {r.status})")
+        except urllib.error.HTTPError as e:
+            print(f"⚠️  citations upsert 실패 HTTP {e.code}: {e.read().decode()[:200]}")
+        except Exception as e:
+            print(f"⚠️  citations upsert 실패 {type(e).__name__}: {e}")
     else:
         print("ℹ️  Supabase 자격증명 없음 — JSON 파일만 저장")
 
