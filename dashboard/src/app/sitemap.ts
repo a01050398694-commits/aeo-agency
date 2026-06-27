@@ -32,6 +32,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const f of data.faqs) {
       if (f.slug) proRoutes.push(`/pro/${siteSlug}/faq/${f.slug}/`)
     }
+    for (const t of data.topics || []) {
+      proRoutes.push(`/pro/${siteSlug}/topic/${t.slug}/`)
+    }
   }
 
   const cafeRoutes: string[] = []

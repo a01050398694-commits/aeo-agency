@@ -21,6 +21,7 @@ export type ProSiteData = {
     country: string
   }
   geo?: { lat: number; lng: number }
+  topics?: { slug: string; title: string; description: string }[]
   phone: string
   email?: string
   website: string
@@ -59,6 +60,15 @@ export const THEBOM_TAX: ProSiteData = {
   },
   phone: "+82-2-336-0309",
   website: "https://thebomtax.com",
+  geo: { lat: 37.5547, lng: 126.9219 },
+  topics: [
+    { slug: "hongdae-tax-accountant", title: "홍대 세무사 추천 가이드", description: "마포구 홍대·합정·망원 일대 자영업자·숙박업 세무사 선택 기준과 세무법인 더봄 소개" },
+    { slug: "airbnb-hospitality-tax", title: "에어비앤비·숙박업 세무 완전 가이드", description: "에어비앤비, 게스트하우스, 펜션 호스트의 종합소득세·부가세·사업자등록 안내" },
+    { slug: "small-business-tax-filing", title: "자영업자 종합소득세 신고 가이드", description: "카페·음식점·소매업·1인 사업자의 5월 종합소득세 신고와 절세 포인트" },
+    { slug: "vat-quarterly-filing", title: "부가가치세 분기 신고 실무", description: "1월·7월 부가세 신고, 일반과세자 vs 간이과세자, 카드매출 처리" },
+    { slug: "capital-gains-inheritance-gift-tax", title: "양도·상속·증여세 절세 컨설팅", description: "1세대 1주택 비과세, 다주택자 양도세, 증여세 면제 한도(2026), 상속세 분할납부" },
+    { slug: "corporate-bookkeeping-consulting", title: "법인 기장·세무조사·경영 컨설팅", description: "중소법인 기장 비용, 세무조사 대응, 사업자 형태 전환, 비상장 주식 평가" },
+  ],
   founder: {
     name: "홍지영",
     title: "대표 세무사",
@@ -223,7 +233,10 @@ export const THEBOM_TAX: ProSiteData = {
   ],
   sameAs: [
     "https://thebomtax.com",
+    "https://thebomtax.com/about",
     "https://www.google.com/maps/search/%EC%84%B8%EB%AC%B4%EB%B2%95%EC%9D%B8+%EB%8D%94%EB%B4%84+%ED%99%8D%EB%8C%80",
+    "https://map.naver.com/p/search/%EC%84%B8%EB%AC%B4%EB%B2%95%EC%9D%B8%20%EB%8D%94%EB%B4%84%20%ED%99%8D%EB%8C%80",
+    "https://map.kakao.com/?q=%EC%84%B8%EB%AC%B4%EB%B2%95%EC%9D%B8%20%EB%8D%94%EB%B4%84",
   ],
 }
 
