@@ -46,6 +46,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // 영문 페이지 (외국인 호스트)
     proRoutes.push(`/pro/${siteSlug}/en/`)
     proRoutes.push(`/pro/${siteSlug}/en/airbnb-tax/`)
+    // 블로그
+    proRoutes.push(`/pro/${siteSlug}/blog/`)
+    const BLOG_SLUGS = [
+      "2026-tax-changes-key-5",
+      "may-comprehensive-income-tax-checklist",
+      "vat-input-credit-cafes-restaurants",
+      "1-house-1-household-capital-gains-12bil",
+      "family-corporation-tax-savings",
+    ]
+    for (const bs of BLOG_SLUGS) {
+      proRoutes.push(`/pro/${siteSlug}/blog/${bs}/`)
+    }
     for (const f of data.faqs) {
       if (f.slug) proRoutes.push(`/pro/${siteSlug}/faq/${f.slug}/`)
     }
