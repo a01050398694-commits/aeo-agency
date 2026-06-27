@@ -29,6 +29,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     proRoutes.push(`/pro/${siteSlug}/faq/`)
     proRoutes.push(`/pro/${siteSlug}/contact/`)
     proRoutes.push(`/pro/${siteSlug}/guide/`)
+    proRoutes.push(`/pro/${siteSlug}/founder/`)
     for (const f of data.faqs) {
       if (f.slug) proRoutes.push(`/pro/${siteSlug}/faq/${f.slug}/`)
     }

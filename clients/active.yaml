@@ -5,11 +5,12 @@
 
 clients:
   - slug: mangwon-roughrough
-    status: active
-    priority: high
+    status: paused
+    priority: low
     onboarded_at: 2026-06-24
+    paused_at: 2026-06-27
     primary_query: "망원카페 추천"
-    notes: "첫 실전 클라이언트 (dry-run 단계). 망리단길 디저트 카페."
+    notes: "Dry-run 종료. 더봄세무에 100% 집중. 기존 데이터/페이지는 보존."
   - slug: thebom-tax
     status: active
     priority: high

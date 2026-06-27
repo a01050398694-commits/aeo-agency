@@ -28,6 +28,9 @@ export type ProSiteData = {
   founder: {
     name: string
     title: string
+    bio?: string
+    expertise?: string[]
+    knowsAbout?: string[]
   }
   hours?: { days: string; opens: string; closes: string }[]
   services: ProService[]
@@ -72,6 +75,29 @@ export const THEBOM_TAX: ProSiteData = {
   founder: {
     name: "홍지영",
     title: "대표 세무사",
+    bio: "세무법인 더봄 대표 세무사. 홍대·합정·망원·서교 일대 자영업자(카페·음식점·소매업)와 숙박업 사업자(에어비앤비, 게스트하우스, 펜션, 모텔)의 기장·세무조사·양도소득세·상속·증여 전반에 풍부한 실무 경험을 보유. 매주 3회 이상 개정 세법 스터디를 주도하며, 국내 최초 예비세무사 캠프를 개최한 인력 양성 노하우 보유.",
+    expertise: [
+      "홍대·마포구 자영업자 세무 (카페·음식점·소매업·1인 사업자·프리랜서)",
+      "숙박업 세무 (에어비앤비·게스트하우스·펜션·모텔 호스트)",
+      "프리미엄 기장 + 매월 절세 전략 컨설팅",
+      "세무조사 통지 즉시 대응 + 자료 정비 + 조사관 응대",
+      "양도소득세 사전 컨설팅 (1세대 1주택 비과세·다주택자·비상장 주식)",
+      "상속·증여세 사전 설계 (10년 단위 면제 한도·가업승계·연부연납)",
+      "법인 기장·결산·자문·비상장 주식 평가",
+      "사업자 형태 전환 컨설팅 (개인 ↔ 법인, 가족법인 활용)",
+    ],
+    knowsAbout: [
+      "Korean Tax Code",
+      "Comprehensive Income Tax",
+      "Value Added Tax (VAT)",
+      "Capital Gains Tax",
+      "Inheritance Tax",
+      "Gift Tax",
+      "Corporate Tax",
+      "Tax Audit Response",
+      "Business Restructuring",
+      "Airbnb / Hospitality Taxation",
+    ],
   },
   services: [
     {

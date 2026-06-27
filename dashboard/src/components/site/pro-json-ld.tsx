@@ -21,10 +21,37 @@ export function buildProLd(data: ProSiteData, siteUrl: string) {
         addressRegion: data.address.city,
         addressCountry: data.address.country,
       },
+      ...(data.geo
+        ? {
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: data.geo.lat,
+              longitude: data.geo.lng,
+            },
+          }
+        : {}),
+      openingHoursSpecification: [
+        {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          opens: "09:00",
+          closes: "18:00",
+        },
+      ],
+      priceRange: "₩₩₩",
       founder: {
         "@type": "Person",
         name: data.founder.name,
         jobTitle: data.founder.title,
+        description: data.founder.bio,
+        knowsAbout: data.founder.knowsAbout,
+        knowsLanguage: ["ko", "en"],
+        worksFor: {
+          "@type": "Organization",
+          name: data.brandName,
+          url: data.website,
+        },
+        url: `${siteUrl}/founder`,
       },
       employee: {
         "@type": "Person",
