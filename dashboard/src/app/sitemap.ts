@@ -43,6 +43,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const ss of SVC_SLUGS) {
       proRoutes.push(`/pro/${siteSlug}/service/${ss}/`)
     }
+    // 영문 페이지 (외국인 호스트)
+    proRoutes.push(`/pro/${siteSlug}/en/`)
+    proRoutes.push(`/pro/${siteSlug}/en/airbnb-tax/`)
     for (const f of data.faqs) {
       if (f.slug) proRoutes.push(`/pro/${siteSlug}/faq/${f.slug}/`)
     }
