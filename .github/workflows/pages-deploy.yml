@@ -9,6 +9,10 @@ on:
       - "dashboard/**"
       - ".github/workflows/pages-deploy.yml"
   workflow_dispatch:
+  # 매일 SOV 측정 완료 후 자동 재배포 → /status 페이지 최신 데이터
+  workflow_run:
+    workflows: ["Daily SOV Measurement"]
+    types: [completed]
 
 permissions:
   contents: read

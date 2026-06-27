@@ -96,7 +96,14 @@ jobs:
           set -euo pipefail
           git config user.name "aeo-bot"
           git config user.email "aeo-bot@users.noreply.github.com"
-          git add 'clients/*/logs/sov-*.json' 'clients/*/logs/sov-chatgpt-*.json' || true
+          # 패턴 따옴표 제거: bash가 glob 확장 (nullglob로 안전)
+          shopt -s nullglob
+          files=( clients/*/logs/sov-*.json clients/*/logs/sov-chatgpt-*.json )
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "JSON 파일 없음 — 커밋 생략"
+            exit 0
+          fi
+          git add "${files[@]}"
           if git diff --cached --quiet; then
             echo "변경 없음 — 커밋 생략"
             exit 0
@@ -104,14 +111,7 @@ jobs:
           DATE=$(date +%Y-%m-%d)
           git commit -m "chore(sov): daily measurement $DATE (gemini+chatgpt)"
           git push
-
-      - name: Trigger Pages rebuild (refresh /status 데이터)
-        run: |
-          # cron 측정 후 /status 페이지가 최신 SOV 데이터로 자동 갱신되도록
-          # Pages workflow를 직접 트리거
-          gh workflow run "Deploy to GitHub Pages" --ref main || echo "Pages trigger 실패 (선택사항)"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Pages 자동 재배포는 별도 워크플로우의 workflow_run 트리거가 처리
 
       - name: Upload artifacts
         if: always()
