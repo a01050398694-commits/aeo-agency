@@ -30,6 +30,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     proRoutes.push(`/pro/${siteSlug}/contact/`)
     proRoutes.push(`/pro/${siteSlug}/guide/`)
     proRoutes.push(`/pro/${siteSlug}/founder/`)
+    // 7개 서비스 각각 별도 페이지
+    const SVC_SLUGS = [
+      "premium-bookkeeping",
+      "tax-audit-response",
+      "capital-gains-tax-consulting",
+      "inheritance-gift-tax-consulting",
+      "business-management-consulting",
+      "accounting-outsourcing",
+      "unlisted-stock-valuation",
+    ]
+    for (const ss of SVC_SLUGS) {
+      proRoutes.push(`/pro/${siteSlug}/service/${ss}/`)
+    }
     for (const f of data.faqs) {
       if (f.slug) proRoutes.push(`/pro/${siteSlug}/faq/${f.slug}/`)
     }
